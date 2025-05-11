@@ -339,7 +339,7 @@ class TabContent(QWidget):
                 file_name += '.csv'
             try:
                 with open(file_name, 'w', encoding='utf-8') as f:
-                    writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
+                    writer = csv.writer(f, delimiter="|", quoting=csv.QUOTE_MINIMAL)
                     header = ["Timestamp", "Hostname", "Port", "Defaults", "Auth Status", "Version", "Queues"]
                     writer.writerow(header)
                     for row in range(self.ui.OutputTable.rowCount()):
@@ -540,7 +540,7 @@ class TabContent(QWidget):
                                 )
                                 if queues_response.status_code == 200:
                                     queues = queues_response.json()
-                                    queues_json = json.dumps(queues, indent=2)
+                                    queues_json = json.dumps(queues)
                                     self.ui.StatusTextBox.appendPlainText("Queues:")
                                     self.ui.StatusTextBox.appendPlainText(queues_json)
                                     queues = queues_json
