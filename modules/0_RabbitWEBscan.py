@@ -491,6 +491,7 @@ class TabContent(QWidget):
 
                             # Initialize defaults with the successful credential
                             defaults_parts = [f"{username}:{password}"]
+                            users_parts = [f""]
 
                             # Get version from /api/overview
                             try:
@@ -523,7 +524,7 @@ class TabContent(QWidget):
                                         password_hash = user.get("password_hash", "None")
                                         tags = user.get("tags", [])
                                         role = "administrator" if "administrator" in tags else "user"
-                                        defaults_parts.append(f"User: {name}, Hash: {password_hash}, Role: {role}")
+                                        user_parts.append(f"User: {name}, Hash: {password_hash}, Role: {role}")
                                         self.ui.StatusTextBox.appendPlainText(f" - User: {name}, Hash: {password_hash}, Role: {role}")
                                 else:
                                     self.ui.StatusTextBox.appendPlainText(f"Error retrieving users: HTTP {users_response.status_code}")
@@ -532,6 +533,7 @@ class TabContent(QWidget):
 
                             # Set Defaults column
                             defaults = "; ".join(defaults_parts)
+                            users = "".join(users_parts)
 
                             # Get users from /api/users to include hash and role
                             try:
