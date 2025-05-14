@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from PySide6.QtWidgets import QWidget, QPlainTextEdit, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QFrame, QGridLayout, QFileDialog, QSpacerItem, QSizePolicy, QTableWidget, QTableWidgetItem, QHeaderView
+from PySide6.QtWidgets import QApplication, QWidget, QPlainTextEdit, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QFrame, QGridLayout, QFileDialog, QSpacerItem, QSizePolicy, QTableWidget, QTableWidgetItem, QHeaderView
 from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt
 import datetime
@@ -173,7 +173,7 @@ class Ui_TabContent:
         # Output table
         self.OutputTable = QTableWidget(self.frame_3)
         self.OutputTable.setColumnCount(7)  # Updated to 7 columns
-        self.OutputTable.setHorizontalHeaderLabels(["Timestamp", "Hostname", "Port", "Defaults", "Auth Status", "Version", "Queues"])
+        self.OutputTable.setHorizontalHeaderLabels(["Timestamp", "Hostname", "Port", "Defaults", "Auth Status", "Version", "Users"])
         self.OutputTable.setEditTriggers(QTableWidget.NoEditTriggers)  # Make read-only
         self.OutputTable.horizontalHeader().setSortIndicatorShown(True)  # Show sort indicator
         self.gridLayout.addWidget(self.OutputTable, 1, 1, 1, 1)
@@ -340,7 +340,7 @@ class TabContent(QWidget):
             try:
                 with open(file_name, 'w', encoding='utf-8') as f:
                     writer = csv.writer(f, delimiter="|", quoting=csv.QUOTE_MINIMAL)
-                    header = ["Timestamp", "Hostname", "Port", "Defaults", "Auth Status", "Version", "Queues"]
+                    header = ["Timestamp", "Hostname", "Port", "Defaults", "Auth Status", "Version", "Users"]
                     writer.writerow(header)
                     for row in range(self.ui.OutputTable.rowCount()):
                         row_data = []
@@ -361,7 +361,7 @@ class TabContent(QWidget):
         """Initialize the OutputTable with column headers and widths."""
         self.ui.OutputTable.setRowCount(0)
         self.ui.OutputTable.setColumnCount(7)  # 7 columns
-        self.ui.OutputTable.setHorizontalHeaderLabels(["Timestamp", "Hostname", "Port", "Defaults", "Auth Status", "Version", "Queues"])
+        self.ui.OutputTable.setHorizontalHeaderLabels(["Timestamp", "Hostname", "Port", "Defaults", "Auth Status", "Version", "Users"])
         self.ui.OutputTable.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
         self.ui.OutputTable.setColumnWidth(0, 160)  # Timestamp
         self.ui.OutputTable.setColumnWidth(1, 130)  # Hostname
@@ -369,7 +369,7 @@ class TabContent(QWidget):
         self.ui.OutputTable.setColumnWidth(3, 150)  # Defaults
         self.ui.OutputTable.setColumnWidth(4, 90)   # Auth Status
         self.ui.OutputTable.setColumnWidth(5, 100)  # Version
-        self.ui.OutputTable.setColumnWidth(6, 200)  # Queues
+        self.ui.OutputTable.setColumnWidth(6, 200)  # Users
         self.ui.OutputTable.horizontalHeader().setSectionResizeMode(6, QHeaderView.Stretch)
 
     def scan_hosts(self):
@@ -399,17 +399,18 @@ class TabContent(QWidget):
             self.ui.StatusTextBox.appendPlainText(f"\nScanning {host}:{port_display}/api...")
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             try:
-                defaults, auth_status, version, queues = self.scan_host(host, port, protocol)
+                defaults, auth_status, version, users = self.scan_host(host, port, protocol)
             except Exception as e:
                 self.ui.StatusTextBox.appendPlainText(f"Error scanning {host}: {e}")
                 defaults = "N/A"
                 auth_status = "unknown"
                 version = "unknown"
-                queues = "error"
+                users = "error"
 
             # Log the result even if an error occurred
             row_count = self.ui.OutputTable.rowCount()
             self.ui.OutputTable.insertRow(row_count)
+            self.ui.OutputTable.scrollToBottom()
             row_data = [timestamp, host, port_display, defaults, auth_status, version, queues]
             for col, data in enumerate(row_data):
                 item = QTableWidgetItem(str(data))
@@ -423,6 +424,7 @@ class TabContent(QWidget):
                     except ValueError:
                         pass
                 self.ui.OutputTable.setItem(row_count, col, item)
+                QApplication.processEvents() # Force UI update
 
             self.ui.StatusTextBox.appendPlainText(f"Completed scan for {host}")
 
@@ -453,7 +455,7 @@ class TabContent(QWidget):
         defaults = "N/A"
         auth_status = "unknown"
         version = "unknown"
-        queues = "unknown"
+        users = "unknown"
 
         # Set protocol (HTTP or HTTPS)
         proto = "http" if protocol == "tcp" else "https"
@@ -468,8 +470,8 @@ class TabContent(QWidget):
                 defaults = "error"
                 auth_status = "enabled"
                 version = "no credentials file"
-                queues = "no credentials file"
-                return defaults, auth_status, version, queues
+                users = "no credentials file"
+                return defaults, auth_status, version, users
 
             # Try each credential pair
             for username, password in credentials:
@@ -549,7 +551,7 @@ class TabContent(QWidget):
                                     queues = "error"
                             except Exception as e:
                                 self.ui.StatusTextBox.appendPlainText(f"Error retrieving queues: {e}")
-                                queues = "error"
+                                users = "error"
 
                             break  # Stop after successful authentication
                         else:
@@ -559,27 +561,27 @@ class TabContent(QWidget):
                 except requests.exceptions.RequestException as e:
                     self.ui.StatusTextBox.appendPlainText(f"Error testing credential {username}:{password}: {e}")
                     if "connect" in str(e).lower():
-                        queues = "port not open"
+                        users = "port not open"
                         raise Exception(f"Connection error: {e}")
 
             if auth_status != "bypassed":
                 defaults = "None"
                 auth_status = "enabled"
                 version = "no valid credentials"
-                queues = "no valid credentials"
+                users = "no valid credentials"
                 self.ui.StatusTextBox.appendPlainText("No default credentials worked.")
 
         except Exception as e:
             self.ui.StatusTextBox.appendPlainText(f"Connection error: {e}")
             if "connect" in str(e).lower():
-                queues = "port not open"
+                users = "port not open"
             else:
-                queues = "error"
+                users = "error"
             raise Exception(f"Connection error: {e}")
         finally:
             session.close()
 
-        return defaults, auth_status, version, queues
+        return defaults, auth_status, version, users
 
 if __name__ == "__main__":
     from PySide6.QtWidgets import QApplication
