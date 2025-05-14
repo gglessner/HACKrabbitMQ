@@ -518,8 +518,8 @@ class TabContent(QWidget):
                                     timeout=5
                                 )
                                 if users_response.status_code == 200:
-                                    users = users_response.json()
-                                    for user in users:
+                                    users)data = users_response.json()
+                                    for user in users_data:
                                         name = user.get("name", "Unknown")
                                         password_hash = user.get("password_hash", "None")
                                         tags = user.get("tags", [])
