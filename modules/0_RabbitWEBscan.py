@@ -411,7 +411,7 @@ class TabContent(QWidget):
             row_count = self.ui.OutputTable.rowCount()
             self.ui.OutputTable.insertRow(row_count)
             self.ui.OutputTable.scrollToBottom()
-            row_data = [timestamp, host, port_display, defaults, auth_status, version, queues]
+            row_data = [timestamp, host, port_display, defaults, auth_status, version, users]
             for col, data in enumerate(row_data):
                 item = QTableWidgetItem(str(data))
                 item.setFlags(item.flags() & ~Qt.ItemIsEditable)
@@ -533,22 +533,25 @@ class TabContent(QWidget):
                             # Set Defaults column
                             defaults = "; ".join(defaults_parts)
 
-                            # Get queues from /api/queues
+                            # Get users from /api/users to include hash and role
                             try:
-                                queues_response = session.get(
-                                    f"{base_url}/queues",
+                                users_response = session.get(
+                                    f"{base_url}/users",
                                     auth=HTTPBasicAuth(username, password),
                                     timeout=5
                                 )
-                                if queues_response.status_code == 200:
-                                    queues = queues_response.json()
-                                    queues_json = json.dumps(queues)
-                                    self.ui.StatusTextBox.appendPlainText("Queues:")
-                                    self.ui.StatusTextBox.appendPlainText(queues_json)
-                                    queues = queues_json
+                                if users_response.status_code == 200:
+                                    users_data = users_response.json()
+                                    for user in users_data:
+                                        name = user.get("name", "Unknown")
+                                        password_hash = user.get("password_hash", "None")
+                                        tags - user.get("tags", [])
+                                        role = "administrator" if "administrator" in tags else "user"
+                                        users_parts.append(f"User: {name}, Hash: {password_hash}, Role: {role}")
+                                        self.ui.StatusTextBox.appendPlaintText(f" - User: {name}, Hash: {password_hash}, Role: {role}")
                                 else:
                                     self.ui.StatusTextBox.appendPlainText(f"Error retrieving queues: HTTP {queues_response.status_code}")
-                                    queues = "error"
+                                    users = "error"
                             except Exception as e:
                                 self.ui.StatusTextBox.appendPlainText(f"Error retrieving queues: {e}")
                                 users = "error"
