@@ -196,7 +196,7 @@ class Ui_TabContent:
         self.horizontalLayout_2.addWidget(self.ApiEndpointLabel)
 
         self.ApiEndpointComboBox = QComboBox(self.frame_2)
-        self.ApiEndpointComboBox.addItems(["whoami", "users", "queues", "nodes", "user/", "node/"])
+        self.ApiEndpointComboBox.addItems(["whoami", "overview", "cluster-name", "nodes", "nodes/", "connections", "connections/", "queues", "queues/", "exchanges", "exchanges/", "bindings", "bindings/", "consumers", "definitions", "channels", "channels/", "users", "users/"])
         self.horizontalLayout_2.addWidget(self.ApiEndpointComboBox)
 
         self.ApiParamLine = QLineEdit(self.frame_2)
@@ -297,9 +297,9 @@ class TabContent(QWidget):
         button_width = self.ui.ProtocolToggleButton.sizeHint().width()
         self.ui.IpLine.setFixedWidth(button_width * 2)  # Wider for IP address
         self.ui.PortLine.setFixedWidth(button_width)
-        self.ui.MethodComboBox.setFixedWidth(button_width)
-        self.ui.ApiEndpointComboBox.setFixedWidth(button_width * 1.5)  # Wider for endpoints
-        self.ui.ApiParamLine.setFixedWidth(button_width * 2)  # Wider for parameters
+        self.ui.MethodComboBox.setFixedWidth(button_width * 2)
+        self.ui.ApiEndpointComboBox.setFixedWidth(button_width * 3)  # Wider for endpoints
+        self.ui.ApiParamLine.setFixedWidth(button_width * 4)  # Wider for parameters
 
         # Connect signals to slots
         self.ui.RequestLoadButton.clicked.connect(self.load_request)
