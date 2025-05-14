@@ -531,10 +531,6 @@ class TabContent(QWidget):
                             except Exception as e:
                                 self.ui.StatusTextBox.appendPlainText(f"Error retrieving users: {e}")
 
-                            # Set Defaults column
-                            defaults = "; ".join(defaults_parts)
-                            users = "".join(users_parts)
-
                             # Get users from /api/users to include hash and role
                             try:
                                 users_response = session.get(
@@ -553,10 +549,13 @@ class TabContent(QWidget):
                                         self.ui.StatusTextBox.appendPlaintText(f" - User: {name}, Hash: {password_hash}, Role: {role}")
                                 else:
                                     self.ui.StatusTextBox.appendPlainText(f"Error retrieving queues: HTTP {queues_response.status_code}")
-                                    users = "error"
+
                             except Exception as e:
                                 self.ui.StatusTextBox.appendPlainText(f"Error retrieving queues: {e}")
-                                users = "error"
+
+                            # Set Defaults column
+                            defaults = ";".join(defaults_parts)
+                            users = "".joing(users_parts)
 
                             break  # Stop after successful authentication
                         else:
