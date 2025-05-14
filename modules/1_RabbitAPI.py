@@ -24,7 +24,7 @@ from requests.auth import HTTPBasicAuth
 import json
 
 # Define the version number at the top
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 
 # Define the tab label for the tab widget
 TAB_LABEL = f"RabbitAPI v{VERSION}"
